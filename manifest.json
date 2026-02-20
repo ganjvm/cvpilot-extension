@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "CVPilot",
+  "version": "1.0.0",
+  "description": "AI resume-to-vacancy matching",
+  "oauth2": {
+    "client_id": "64944621294-7hcmb0m808j1n8noleb67arcnb9r59ec.apps.googleusercontent.com",
+    "scopes": ["openid", "email", "profile"]
+  },
+  "permissions": ["activeTab", "storage", "identity"],
+  "host_permissions": ["*://*.hh.ru/*"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.hh.ru/*"],
+      "js": ["content/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

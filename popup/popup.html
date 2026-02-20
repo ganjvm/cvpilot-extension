@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVPilot</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">CVPilot</div>
+      <button id="signOutBtn" class="btn-icon" title="Sign out" style="display:none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- State: Auth -->
+    <div id="state-auth" class="state" style="display:none;">
+      <div class="state-center">
+        <div class="state-icon">🔐</div>
+        <h2>Welcome to CVPilot</h2>
+        <p class="text-muted">AI-powered resume matching for hh.ru vacancies</p>
+        <button id="googleSignInBtn" class="btn btn-primary btn-google">
+          <svg width="18" height="18" viewBox="0 0 48 48" class="google-icon">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          Sign in with Google
+        </button>
+      </div>
+    </div>
+
+    <!-- State: Empty (no resume) -->
+    <div id="state-empty" class="state" style="display:none;">
+      <div class="state-content">
+        <div class="state-icon">📄</div>
+        <h2>Load your resume</h2>
+        <p class="text-muted">Open your resume on hh.ru or paste it below</p>
+        <!-- Shown when on a resume page -->
+        <div id="resumePageAction" class="resume-page-action" style="display:none;">
+          <div class="resume-preview-box" id="resumePreviewBox"></div>
+          <button id="loadFromPageBtn" class="btn btn-primary">Load This Resume</button>
+        </div>
+        <textarea id="resumeTextarea" class="textarea" placeholder="Paste your resume text here..." rows="10"></textarea>
+        <button id="saveResumeBtn" class="btn btn-primary">Save Resume</button>
+        <div id="resumeStatus" class="resume-status" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- State: Ready (resume loaded, on vacancy page) -->
+    <div id="state-ready" class="state" style="display:none;">
+      <div class="state-content">
+        <div class="vacancy-info">
+          <h3 id="vacancyTitle" class="vacancy-title"></h3>
+          <p id="vacancyCompany" class="vacancy-company"></p>
+        </div>
+        <div class="resume-info-box" id="resumeInfoBox">
+          <div class="resume-badge">
+            <span class="badge">✓ Resume loaded</span>
+            <button id="clearResumeBtn" class="btn-link">Change</button>
+          </div>
+          <p id="resumePreview" class="resume-preview"></p>
+          <p id="resumeMeta" class="resume-meta"></p>
+        </div>
+        <button id="analyzeBtn" class="btn btn-primary btn-analyze">Analyze Match</button>
+        <p id="remainingCounter" class="text-muted remaining"></p>
+      </div>
+    </div>
+
+    <!-- State: Loading -->
+    <div id="state-loading" class="state" style="display:none;">
+      <div class="state-center">
+        <div class="spinner"></div>
+        <h2>Analyzing...</h2>
+        <p class="text-muted">AI is comparing your resume with the vacancy</p>
+      </div>
+    </div>
+
+    <!-- State: Result -->
+    <div id="state-result" class="state" style="display:none;">
+      <div class="state-content result-content">
+        <div class="score-section">
+          <div id="scoreCircle" class="score-circle">
+            <span id="scoreValue" class="score-value">0</span>
+            <span class="score-label">%</span>
+          </div>
+          <p id="matchLevel" class="match-level"></p>
+        </div>
+        <p id="summaryText" class="summary-text"></p>
+
+        <div id="strengthsSection" class="result-section">
+          <h4 class="section-title section-title--green">Strengths</h4>
+          <ul id="strengthsList" class="result-list"></ul>
+        </div>
+
+        <div id="partialSection" class="result-section">
+          <h4 class="section-title section-title--yellow">Partial Matches</h4>
+          <ul id="partialList" class="result-list"></ul>
+        </div>
+
+        <div id="gapsSection" class="result-section">
+          <h4 class="section-title section-title--red">Gaps</h4>
+          <ul id="gapsList" class="result-list"></ul>
+        </div>
+
+        <div id="recommendationsSection" class="result-section">
+          <h4 class="section-title">Recommendations</h4>
+          <div id="recommendationsList" class="recommendations"></div>
+        </div>
+
+        <div id="riskSection" class="result-section">
+          <h4 class="section-title section-title--orange">Risk Notes</h4>
+          <ul id="riskList" class="result-list"></ul>
+        </div>
+
+        <div class="result-actions">
+          <button id="analyzeAgainBtn" class="btn btn-secondary">Analyze Again</button>
+          <p id="resultRemaining" class="text-muted remaining"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- State: Limit Reached -->
+    <div id="state-limit" class="state" style="display:none;">
+      <div class="state-center">
+        <div class="state-icon">⚡</div>
+        <h2>Daily limit reached</h2>
+        <p class="text-muted">Free plan allows 3 analyses per day</p>
+        <button class="btn btn-primary" disabled>Upgrade to Pro (coming soon)</button>
+      </div>
+    </div>
+
+    <!-- State: Error -->
+    <div id="state-error" class="state" style="display:none;">
+      <div class="state-center">
+        <div class="state-icon">⚠️</div>
+        <h2>Something went wrong</h2>
+        <p id="errorMessage" class="text-muted error-message"></p>
+        <button id="retryBtn" class="btn btn-primary">Retry</button>
+      </div>
+    </div>
+
+    <!-- State: Wrong Page -->
+    <div id="state-wrong-page" class="state" style="display:none;">
+      <div class="state-center">
+        <div class="state-icon">🌐</div>
+        <h2>Open a vacancy</h2>
+        <p class="text-muted">Navigate to a vacancy page on hh.ru to analyze the match with your resume</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

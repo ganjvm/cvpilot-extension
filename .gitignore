@@ -1,0 +1,23 @@
+### IDE ###
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+
+### Environment ###
+.env
+
+### Claude Code ###
+.claude/
+CLAUDE.md
+
+### OS ###
+.DS_Store
+Thumbs.db
+desktop.ini
+
+### Chrome Extension dev artifacts ###
+*.pem
+*.crx
+*.zip
