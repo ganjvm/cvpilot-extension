@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "description": "AI resume-to-vacancy matching",
   "oauth2": {
-    "client_id": "64944621294-7hcmb0m808j1n8noleb67arcnb9r59ec.apps.googleusercontent.com",
-    "scopes": ["openid", "email", "profile"]
+    "client_id": "64944621294-7hcmb0m508j1n8noleb67arcnb9r59ec.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"]
   },
   "permissions": ["activeTab", "storage", "identity"],
   "host_permissions": ["*://*.hh.ru/*"],
