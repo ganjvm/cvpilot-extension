@@ -25,7 +25,7 @@
       <div class="state-center">
         <div class="state-icon">🔐</div>
         <h2>Welcome to CVPilot</h2>
-        <p class="text-muted">AI-powered resume matching for hh.ru vacancies</p>
+        <p class="text-muted">Smart resume-to-job matching</p>
         <button id="googleSignInBtn" class="btn btn-primary btn-google">
           <svg width="18" height="18" viewBox="0 0 48 48" class="google-icon">
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -49,6 +49,16 @@
           <div class="resume-preview-box" id="resumePreviewBox"></div>
           <button id="loadFromPageBtn" class="btn btn-primary">Load This Resume</button>
         </div>
+        <input type="file" id="resumeFileInput" accept=".pdf,.docx" style="display:none;">
+        <button id="uploadResumeBtn" class="btn btn-upload">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          Upload PDF or DOCX
+        </button>
+        <div class="divider-or"><span>or</span></div>
         <textarea id="resumeTextarea" class="textarea" placeholder="Paste your resume text here..." rows="10"></textarea>
         <button id="saveResumeBtn" class="btn btn-primary">Save Resume</button>
         <div id="resumeStatus" class="resume-status" style="display:none;"></div>
@@ -158,6 +168,7 @@
     </div>
   </div>
 
+  <script src="../lib/api.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

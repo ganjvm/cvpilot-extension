@@ -31,6 +31,8 @@ const els = {
   gapsList: document.getElementById('gapsList'),
   recommendationsList: document.getElementById('recommendationsList'),
   riskList: document.getElementById('riskList'),
+  uploadResumeBtn: document.getElementById('uploadResumeBtn'),
+  resumeFileInput: document.getElementById('resumeFileInput'),
   errorMessage: document.getElementById('errorMessage'),
   strengthsSection: document.getElementById('strengthsSection'),
   partialSection: document.getElementById('partialSection'),
@@ -160,7 +162,8 @@ async function init() {
     els.vacancyCompany.textContent = pageInfo.data.company || '';
     // Show resume info
     els.resumePreview.textContent = resume.text.substring(0, 200) + '...';
-    const source = resume.source === 'hh.ru' ? 'Auto-parsed from hh.ru' : 'Manual input';
+    const sourceLabels = { 'hh.ru': 'Auto-parsed from hh.ru', 'file': 'Uploaded from file', 'manual': 'Manual input' };
+    const source = sourceLabels[resume.source] || 'Manual input';
     const date = resume.updatedAt ? new Date(resume.updatedAt).toLocaleDateString() : '';
     els.resumeMeta.textContent = `${source}${date ? ' · ' + date : ''}`;
     showState('ready');
@@ -345,6 +348,55 @@ function showStatus(msg, type) {
   els.resumeStatus.className = `resume-status ${type}`;
   els.resumeStatus.style.display = 'block';
 }
+
+// Upload resume file
+els.uploadResumeBtn.addEventListener('click', () => {
+  els.resumeFileInput.click();
+});
+
+els.resumeFileInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Client-side validation
+  const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  const validExts = ['.pdf', '.docx'];
+  const ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+  if (!validTypes.includes(file.type) && !validExts.includes(ext)) {
+    showStatus('Please select a PDF or DOCX file', 'error');
+    els.resumeFileInput.value = '';
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    showStatus('File is too large (max 10 MB)', 'error');
+    els.resumeFileInput.value = '';
+    return;
+  }
+
+  els.uploadResumeBtn.disabled = true;
+  showStatus('Parsing file...', 'info');
+
+  try {
+    const data = await parseResumeFile(file);
+    if (data.status === 'success' && data.data) {
+      const { text, characterCount, detectedFormat } = data.data;
+      await ResumeDB.save(text, 'file');
+      showStatus(`Parsed from ${detectedFormat.toUpperCase()} · ${characterCount.toLocaleString()} characters`, 'success');
+      setTimeout(() => init(), 800);
+    } else {
+      showStatus('Failed to parse file', 'error');
+    }
+  } catch (err) {
+    if (err.message === 'AUTH_EXPIRED') {
+      showState('auth');
+      return;
+    }
+    showStatus(err.message || 'Failed to parse file', 'error');
+  } finally {
+    els.uploadResumeBtn.disabled = false;
+    els.resumeFileInput.value = '';
+  }
+});
 
 // Clear resume
 els.clearResumeBtn.addEventListener('click', async () => {
