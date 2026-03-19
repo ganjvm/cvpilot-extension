@@ -22,8 +22,9 @@ const els = {
   vacancyCompany: document.getElementById('vacancyCompany'),
   remainingCounter: document.getElementById('remainingCounter'),
   resultRemaining: document.getElementById('resultRemaining'),
-  scoreCircle: document.getElementById('scoreCircle'),
   scoreValue: document.getElementById('scoreValue'),
+  scoreRingProgress: document.getElementById('scoreRingProgress'),
+  scoreGlow: document.getElementById('scoreGlow'),
   matchLevel: document.getElementById('matchLevel'),
   summaryText: document.getElementById('summaryText'),
   strengthsList: document.getElementById('strengthsList'),
@@ -219,14 +220,36 @@ function displayResult(data) {
   const analysis = data.analysis;
   const metadata = data.metadata;
 
-  // Score
+  // Score ring
   const score = analysis.match_score;
   els.scoreValue.textContent = score;
-  els.scoreCircle.className = 'score-circle';
-  if (score >= 81) els.scoreCircle.classList.add('score-excellent');
-  else if (score >= 61) els.scoreCircle.classList.add('score-good');
-  else if (score >= 31) els.scoreCircle.classList.add('score-medium');
-  else els.scoreCircle.classList.add('score-low');
+
+  // Determine color tier
+  let tier;
+  if (score >= 81) tier = 'green';
+  else if (score >= 61) tier = 'lightgreen';
+  else if (score >= 31) tier = 'orange';
+  else tier = 'red';
+
+  // Animate SVG ring
+  const circumference = 2 * Math.PI * 65; // r=65
+  const offset = circumference - (score / 100) * circumference;
+  els.scoreRingProgress.style.stroke = `url(#ringGrad${tier.charAt(0).toUpperCase() + tier.slice(1)})`;
+  // Reset then animate
+  els.scoreRingProgress.style.transition = 'none';
+  els.scoreRingProgress.style.strokeDashoffset = circumference;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      els.scoreRingProgress.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1)';
+      els.scoreRingProgress.style.strokeDashoffset = offset;
+    });
+  });
+
+  // Glow effect
+  els.scoreGlow.className = `score-ring-glow glow-${tier}`;
+
+  // Score value color
+  els.scoreValue.className = `score-value score-color-${tier}`;
 
   els.matchLevel.textContent = analysis.match_level || '';
   els.summaryText.textContent = analysis.summary || '';
